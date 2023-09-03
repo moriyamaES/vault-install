@@ -274,7 +274,6 @@ Vaultのチュートリアル
 
     https://gammalab.net/blog/3f7pudgk4zbcr/
 
-
 ## vaultのセットアップ
 
 
@@ -399,7 +398,9 @@ Vaultのチュートリアル
     1
     ```
 
-- vault を初期化
+## vault を初期化
+
+- 以下のコマンドを実行
 
     ```
     # vault operator init
@@ -431,5 +432,231 @@ Vaultのチュートリアル
         existing unseal keys shares. See "vault operator rekey" for more information.
         ```
 
+## vault unseal
 
+- 以下のコマンドを実行（5つのUnseal Keyの内、3つのUnseal Keyを3回に分け入力）
 
+    ```
+    # vault operator unseal
+    ```
+
+- oot Tokenを使ってログイン
+
+    ```
+    # vault login
+    ```
+
+## Concourse用のロールとtokenを作成
+
+- 以下のコマンドを実行
+
+    ```
+    # pwd
+    /root/vault-install
+    ```
+
+    ```
+    # cat << EOF > concourse-policy.hcl
+    path "concourse/*" {
+            capabilities = ["read"]
+    }   
+    EOF
+    ```
+
+    ```
+    # cat concourse-policy.hcl
+    path "concourse/*" {
+            capabilities = ["read"]
+    } 
+    ```
+
+- そしたらそのファイルを読み込みます。
+
+    ```
+    # vault policy write concourse ./concourse-policy.hcl
+    ```
+
+    - 結果
+
+        ```
+        Success! Uploaded policy: concourse
+        ```
+
+        - これでconcourseポリシーを作ることができました。
+
+- そしたらconcourseポリシーに基づいたtokenを発行します。
+
+    ```
+    # vault token create --policy concourse
+    ```
+
+    - 結果
+
+        ```
+        Key                  Value
+        ---                  -----
+        token                hvs.CAESII7rrevJiuWGuxuBao28rbs1OnmdLUMV2g05hdXd84uQGh4KHGh2cy5oeGwxeEZoUDFqUVBYU2JsMTRoc3pxSFg
+        token_accessor       2g8wVMS41uLnyxDeqknv0kbn
+        token_duration       768h
+        token_renewable      true
+        token_policies       ["concourse" "default"]
+        identity_policies    []
+        policies             ["concourse" "default"]
+        ```
+
+## concourseCIとvaultを接続
+
+- 以下のサイトを参考にした
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+    https://concourse-ci.org/vault-credential-manager.html
+
+- 先程のトークンをconcourseCIに設定します！docker-composeファイルに以下を追記するだけです。
+- To configure this, first configure the URL of your Vault server by setting the following env on the web node
+
+    ```
+    # cd ~/concourse-install
+    ```
+
+- concourseの`docker-compose.yml`（変更前）
+
+    ```
+    # cat docker-compose.yml 
+    version: '3'
+
+    services:
+    db:
+        image: postgres
+        environment:
+        POSTGRES_DB: concourse
+        POSTGRES_USER: concourse_user
+        POSTGRES_PASSWORD: concourse_pass
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    web:
+        image: concourse/concourse
+        command: web
+        links: [db]
+        depends_on: [db]
+        ports: ["8080:8080"]
+        volumes: ["./keys/web:/concourse-keys"]
+        environment:
+        CONCOURSE_EXTERNAL_URL: http://localhost:8080
+        CONCOURSE_POSTGRES_HOST: db
+        CONCOURSE_POSTGRES_USER: concourse_user
+        CONCOURSE_POSTGRES_PASSWORD: concourse_pass
+        CONCOURSE_POSTGRES_DATABASE: concourse
+        CONCOURSE_ADD_LOCAL_USER: test:test
+        CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    worker:
+        image: concourse/concourse
+        command: worker
+        privileged: true
+        depends_on: [web]
+        volumes: ["./keys/worker:/concourse-keys"]
+        links: [web]
+        stop_signal: SIGUSR2
+        environment:
+        CONCOURSE_TSA_HOST: web:2222
+        # enable DNS proxy to support Docker's 127.x.x.x DNS server
+        CONCOURSE_GARDEN_DNS_PROXY_ENABLE: "true"
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+    ```
+
+- concourseの`docker-compose.yml`（変更後）
+
+    ```
+    # cat docker-compose.yml 
+    version: '3'
+
+    services:
+    db:
+        image: postgres
+        environment:
+        POSTGRES_DB: concourse
+        POSTGRES_USER: concourse_user
+        POSTGRES_PASSWORD: concourse_pass
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    web:
+        image: concourse/concourse
+        command: web
+        links: [db]
+        depends_on: [db]
+        ports: ["8080:8080"]
+        volumes: ["./keys/web:/concourse-keys"]
+        environment:
+        CONCOURSE_EXTERNAL_URL: http://localhost:8080
+        CONCOURSE_POSTGRES_HOST: db
+        CONCOURSE_POSTGRES_USER: concourse_user
+        CONCOURSE_POSTGRES_PASSWORD: concourse_pass
+        CONCOURSE_POSTGRES_DATABASE: concourse
+        CONCOURSE_ADD_LOCAL_USER: test:test
+        CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+        CONCOURSE_VAULT_URL: http://127.0.0.1:8200
+        CONCOURSE_VAULT_CLIENT_TOKEN: hvs.CAESII7rrevJiuWGuxuBao28rbs1OnmdLUMV2g05hdXd84uQGh4KHGh2cy5oeGwxeEZoUDFqUVBYU2JsMTRoc3pxSFg
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    worker:
+        image: concourse/concourse
+        command: worker
+        privileged: true
+        depends_on: [web]
+        volumes: ["./keys/worker:/concourse-keys"]
+        links: [web]
+        stop_signal: SIGUSR2
+        environment:
+        CONCOURSE_TSA_HOST: web:2222
+        # enable DNS proxy to support Docker's 127.x.x.x DNS server
+        CONCOURSE_GARDEN_DNS_PROXY_ENABLE: "true"
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+    ```
+
+- concourse を再起動
+
+    ```
+    # docker-compose down
+    [+] Running 4/4
+    ✔ Container concourse-install-worker-1  Removed                                                                   10.6s 
+    ✔ Container concourse-install-web-1     Removed                                                                   10.3s 
+    ✔ Container concourse-install-db-1      Removed                                                                    0.2s 
+    ✔ Network concourse-install_default     Removed                                                                    0.1s 
+    ```
+
+    ```
+    # docker-compose down
+    [+] Running 4/4
+    ✔ Container concourse-install-worker-1  Removed                                                                   10.6s 
+    ✔ Container concourse-install-web-1     Removed                                                                   10.3s 
+    ✔ Container concourse-install-db-1      Removed                                                                    0.2s 
+    ✔ Network concourse-install_default     Removed                                                                    0.1s 
+    ```
+
+- ここでVMのスナップショットを取るため、VMを停止

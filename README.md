@@ -72,6 +72,7 @@ Vaultのチュートリアル
         ```
         読み込んだプラグイン:fastestmirror, langpacks
         adding repo from: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+
         grabbing file https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo to /etc/yum.repos.d/hashicorp.repo
         repo saved to /etc/yum.repos.d/hashicorp.repo
         ```
@@ -2636,4 +2637,790 @@ Vaultのチュートリアル
 - インストールしなおすしかない
 
 
-## Vault をインストールしなおし（IPは、 10.1.1.200） 
+# Vault をインストールしなおし（IPは、 10.1.1.200） 
+
+
+## インストール手順
+
+- 以下の公式サイトを参考にした
+
+    https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-install
+
+- 以下のコマンドを実行
+
+    ```sh
+    $ yum install -y yum-utils
+    ```
+    - 結果
+
+        ```
+        読み込んだプラグイン:fastestmirror, langpacks
+        Loading mirror speeds from cached hostfile
+        * base: ftp-srv2.kddilabs.jp
+        * elrepo: ftp.yz.yamagata-u.ac.jp
+        * extras: ftp-srv2.kddilabs.jp
+        * updates: ftp-srv2.kddilabs.jp
+        base                                                                                                                                                                     | 3.6 kB  00:00:00     
+        docker-ce-stable                                                                                                                                                         | 3.5 kB  00:00:00     
+        elrepo                                                                                                                                                                   | 3.0 kB  00:00:00     
+        extras                                                                                                                                                                   | 2.9 kB  00:00:00     
+        ius                                                                                                                                                                      | 1.3 kB  00:00:00     
+        updates                                                                                                                                                                  | 2.9 kB  00:00:00     
+        docker-ce-stable/7/x86_64/primary_db                                                                                                                                     | 117 kB  00:00:00     
+        パッケージ yum-utils-1.1.31-54.el7_8.noarch はインストール済みか最新バージョンです
+        何もしません
+        ```
+
+    ```sh
+    $ yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    ```
+
+    - 結果
+
+        ```
+        読み込んだプラグイン:fastestmirror, langpacks
+        adding repo from: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+        grabbing file https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo to /etc/yum.repos.d/hashicorp.repo
+        repo saved to /etc/yum.repos.d/hashicorp.repo
+        ```
+
+    ```
+    $ yum -y install vault
+    ```
+
+    - 結果
+
+        ```
+        読み込んだプラグイン:fastestmirror, langpacks
+        Loading mirror speeds from cached hostfile
+        * base: ftp-srv2.kddilabs.jp
+        * elrepo: ftp.yz.yamagata-u.ac.jp
+        * extras: ftp-srv2.kddilabs.jp
+        * updates: ftp-srv2.kddilabs.jp
+        hashicorp                                                                                                                                   | 1.4 kB  00:00:00     
+        hashicorp/7/x86_64/primary                                                                                                                  | 182 kB  00:00:00     
+        hashicorp                                                                                                                                                1314/1314
+        依存性の解決をしています
+        --> トランザクションの確認を実行しています。
+        ---> パッケージ vault.x86_64 0:1.14.2-1 を インストール
+        --> 依存性解決を終了しました。
+
+        依存性を解決しました
+
+        ===================================================================================================================================================================
+        Package                              アーキテクチャー                      バージョン                              リポジトリー                              容量
+        ===================================================================================================================================================================
+        インストール中:
+        vault                                x86_64                                1.14.2-1                                hashicorp                                129 M
+
+        トランザクションの要約
+        ===================================================================================================================================================================
+        インストール  1 パッケージ
+
+        総ダウンロード容量: 129 M
+        インストール容量: 354 M
+        Downloading packages:
+        警告: /var/cache/yum/x86_64/7/hashicorp/packages/vault-1.14.2-1.x86_64.rpm: ヘッダー V4 RSA/SHA256 Signature、鍵 ID a621e701: NOKEY 19 MB/s | 127 MB  00:00:00 ETA 
+        vault-1.14.2-1.x86_64.rpm の公開鍵がインストールされていません
+        vault-1.14.2-1.x86_64.rpm                                                                                                                   | 129 MB  00:00:07     
+        https://rpm.releases.hashicorp.com/gpg から鍵を取得中です。
+        Importing GPG key 0xA621E701:
+        Userid     : "HashiCorp Security (HashiCorp Package Signing) <security+packaging@hashicorp.com>"
+        Fingerprint: 798a ec65 4e5c 1542 8c8e 42ee aa16 fcbc a621 e701
+        From       : https://rpm.releases.hashicorp.com/gpg
+        Running transaction check
+        Running transaction test
+        Transaction test succeeded
+        Running transaction
+        インストール中          : vault-1.14.2-1.x86_64                                                                                                              1/1Generating Vault TLS key and self-signed certificate...
+        Generating a 4096 bit RSA private key
+        .........................++
+        ..........................++
+        writing new private key to 'tls.key'
+        -----
+        Vault TLS key and self-signed certificate have been generated in '/opt/vault/tls'.
+        検証中                  : vault-1.14.2-1.x86_64                                                                                                              1/1 
+
+        インストール:
+        vault.x86_64 0:1.14.2-1                                                                                                                                          
+
+        完了しました!     
+        ```
+
+- インストールの検証
+
+    ```
+    # vault -v
+    Vault v1.14.2 (16a7033a0686eca50ee650880d5c55438d274489), built 2023-08-24T13:19:12Z
+    ```
+
+## vaultのコンフィグ
+
+- 以下のサイトを参考にした
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+
+- 以下のコマンドを実行
+- コンフィグ`vault.hcl`は変更しない
+- `ui = true`にしてると、8200番ポートでwebUIが開けます！やったね。
+
+    ```diff
+    # diff -u  /etc/vault.d/vault.hcl_org /etc/vault.d/vault.hcl
+    --- /etc/vault.d/vault.hcl_org  2023-09-09 23:45:24.316034782 +0900
+    +++ /etc/vault.d/vault.hcl      2023-09-09 23:50:40.455861475 +0900
+    @@ -6,7 +6,7 @@
+    ui = true
+    
+    #mlock = true
+    -#disable_mlock = true
+    +disable_mlock = true
+    
+    storage "file" {
+    path = "/opt/vault/data"
+    @@ -18,17 +18,18 @@
+    #}
+    
+    # HTTP listener
+    -#listener "tcp" {
+    +listener "tcp" {
+    #  address = "127.0.0.1:8200"
+    -#  tls_disable = 1
+    -#}
+    +  address = "10.1.1.200:8200"
+    +  tls_disable = 1
+    +}
+    
+    # HTTPS listener
+    -listener "tcp" {
+    -  address       = "0.0.0.0:8200"
+    -  tls_cert_file = "/opt/vault/tls/tls.crt"
+    -  tls_key_file  = "/opt/vault/tls/tls.key"
+    -}
+    +#listener "tcp" {
+    +#  address       = "0.0.0.0:8200"
+    +#  tls_cert_file = "/opt/vault/tls/tls.crt"
+    +#  tls_key_file  = "/opt/vault/tls/tls.key"
+    +#}
+    
+    # Enterprise license_path
+    # This will be required for enterprise as of v1.8
+    @@ -48,3 +49,7 @@
+    #  key_label      = "vault-hsm-key"
+    #  hmac_key_label = "vault-hsm-hmac-key"
+    #}
+    +
+    +cluster_addr  = "http://10.1.1.200:8201"
+    +api_addr      = "http://10.1.1.200:8200"
+    +
+    ```
+
+## vaultのセットアップ
+
+- 以下のサイトを参考にしている
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+
+- 以下のコマンドを実行
+
+    ```
+    $ netstat -tuln | grep 8200 | wc -l
+    0
+    ```
+
+- vaultコマンドに今どこのvaultを設定するのかってのを教えてやる。それは環境変数です
+- HTTPにする
+
+    ```sh
+    $ export VAULT_ADDR='http://10.1.1.200:8200'
+    ```
+
+    ```sh
+    $ echo $VAULT_ADDR 
+    http://10.1.1.200:8200
+    ```
+
+- vault を起動する。
+- 参考サイトにはこのコマンドがない
+
+    ```
+    # systemctl start vault.service
+    ```
+
+    ```
+    # systemctl status vault.service
+    ```
+
+    - 結果
+
+        ```
+        ● vault.service - "HashiCorp Vault - A tool for managing secrets"
+        Loaded: loaded (/usr/lib/systemd/system/vault.service; disabled; vendor preset: disabled)
+        Active: active (running) since 土 2023-09-09 23:59:37 JST; 7s ago
+            Docs: https://www.vaultproject.io/docs/
+        Main PID: 17367 (vault)
+            Tasks: 8
+        Memory: 20.3M
+        CGroup: /system.slice/vault.service
+                └─17367 /usr/bin/vault server -config=/etc/vault.d/vault.hcl
+
+        9月 09 23:59:37 control-plane.minikube.internal vault[17367]: Recovery Mode: false
+        9月 09 23:59:37 control-plane.minikube.internal vault[17367]: Storage: file
+        9月 09 23:59:37 control-plane.minikube.internal vault[17367]: Version: Vault v1.14.2, built 2023-08-24T13:19:12Z
+        9月 09 23:59:37 control-plane.minikube.internal vault[17367]: Version Sha: 16a7033a0686eca50ee650880d5c55438d274489
+        9月 09 23:59:37 control-plane.minikube.internal vault[17367]: ==> Vault server started! Log data will stream in below:
+        9月 09 23:59:37 control-plane.minikube.internal vault[17367]: 2023-09-09T23:59:37.323+0900 [INFO]  proxy environment: http_proxy="" https_proxy="" no_proxy=""
+        9月 09 23:59:37 control-plane.minikube.internal vault[17367]: 2023-09-09T23:59:37.324+0900 [INFO]  core: Initializing version history cache for core
+        9月 09 23:59:43 control-plane.minikube.internal vault[17367]: 2023-09-09T23:59:43.277+0900 [INFO]  core: security barrier not initialized
+        9月 09 23:59:43 control-plane.minikube.internal vault[17367]: 2023-09-09T23:59:43.277+0900 [INFO]  core: security barrier not initialized
+        9月 09 23:59:43 control-plane.minikube.internal vault[17367]: 2023-09-09T23:59:43.280+0900 [INFO]  core: seal configuration missing, not initialized        
+        ```
+
+    ```sh
+    $ netstat -tuln | grep 8200
+    tcp        0      0 10.1.1.200:8200         0.0.0.0:*               LISTEN 
+    ```
+## vault を初期化
+
+- 以下のコマンドを実行
+
+    ```
+    # vault operator init
+    ```
+
+    - 結果
+    - この情報は超大事なので超大事に保管してください。
+    - unseal keyが金庫そのものの凍結を解除するための鍵で、Root TokenがRootユーザー(ロール)としてログインんするのに必要な鍵です。
+
+
+    - 結果
+
+        ```
+        Unseal Key 1: tYN2ZXR6UOJKiMZzhQvu1nZ+5bymI/B8nSM0zQBlP+cH
+        Unseal Key 2: zRm7x5T4yjtLWTwwwWaY5K/YL/dplOd+KQ6VyykVeCFH
+        Unseal Key 3: 7xXvhns+T4hp8YT4Pd38EqmURNIU20o92itb8PTNmlt4
+        Unseal Key 4: Y7iHvD3EVISub6uSjqt4aVxtnC+0B8OF7m6TXmYL5f9+
+        Unseal Key 5: K9/xHj95ermVqZTnQlk8ZHJ4xtu4e6d0x+ylMKB90G4r
+
+        Initial Root Token: hvs.AkzMQJ2dOofPjOjsLK7pzmWz
+
+        Vault initialized with 5 key shares and a key threshold of 3. Please securely
+        distribute the key shares printed above. When the Vault is re-sealed,
+        restarted, or stopped, you must supply at least 3 of these keys to unseal it
+        before it can start servicing requests.
+
+        Vault does not store the generated root key. Without at least 3 keys to
+        reconstruct the root key, Vault will remain permanently sealed!
+
+        It is possible to generate new unseal keys, provided you have a quorum of
+        existing unseal keys shares. See "vault operator rekey" for more information.
+        ```
+
+## vault unseal
+
+
+- 以下のコマンドを実行（5つのUnseal Keyの内、3つのUnseal Keyを3回に分け入力）
+
+    ```sh
+    $ vault operator unseal
+    ```
+
+-   Root Tokenを使ってログイン
+
+    ```sh
+    $ vault login
+    ```
+
+## Concourse用のロールとtokenを作成
+
+- 以下のコマンドを実行
+
+    ```sh
+    $ cd /root/vault-install
+    ```
+
+    ```sh
+    $ cat << EOF > concourse-policy.hcl
+    path "concourse/*" {
+            capabilities = ["read"]
+    }   
+    EOF
+    ```
+
+    ```sh
+    $ cat concourse-policy.hcl
+    path "concourse/*" {
+            capabilities = ["read"]
+    } 
+    ```
+
+- そしたらそのファイルを読み込みます。
+
+    ```sh
+    $ vault policy write concourse ./concourse-policy.hcl
+    ```
+
+    - 結果
+
+        ```sh
+        Success! Uploaded policy: concourse
+        ```
+
+    ```sh
+    $ vault policy read concourse
+    ```
+
+    - 結果
+
+        ```sh
+        path "concourse/*" {
+        capabilities = ["read"]
+        }
+        ```
+
+    - これでconcourseポリシーを作ることができました。
+
+- そしたらconcourseポリシーに基づいたtokenを発行します。
+
+    ```
+    $ vault token create --policy concourse
+    ```
+
+    - 結果
+
+        ```
+        Key                  Value
+        ---                  -----
+        token                hvs.CAESIC9wzsgw0a0W6cq1LG1UcqofJAcSxgzFEMrBnDTyECs8Gh4KHGh2cy5UQUZ2NHVINm1wb2pLNWRVSWNrQzNXUG8
+        token_accessor       foHbcXNm4bBw7aq8qMK8nj2b
+        token_duration       768h
+        token_renewable      true
+        token_policies       ["concourse" "default"]
+        identity_policies    []
+        policies             ["concourse" "default"]
+        ```
+
+- 以下のサイトを参考にした
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+    https://concourse-ci.org/vault-credential-manager.html
+
+- 先程のトークンをconcourseCIに設定します！docker-composeファイルに以下を追記するだけです。
+- To configure this, first configure the URL of your Vault server by setting the following env on the web node
+
+    ```sh
+    $ cd ~/concourse-install
+    ```
+
+    ```sh
+    version: '3'
+
+    services:
+    db:
+        image: postgres
+        environment:
+        POSTGRES_DB: concourse
+        POSTGRES_USER: concourse_user
+        POSTGRES_PASSWORD: concourse_pass
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    web:
+        image: concourse/concourse
+        command: web
+        links: [db]
+        depends_on: [db]
+        ports: ["8080:8080"]
+        volumes: ["./keys/web:/concourse-keys"]
+        environment:
+        CONCOURSE_EXTERNAL_URL: http://localhost:8080
+        CONCOURSE_POSTGRES_HOST: db
+        CONCOURSE_POSTGRES_USER: concourse_user
+        CONCOURSE_POSTGRES_PASSWORD: concourse_pass
+        CONCOURSE_POSTGRES_DATABASE: concourse
+        CONCOURSE_ADD_LOCAL_USER: test:test
+        CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+        CONCOURSE_VAULT_URL: http://10.1.1.200:8200
+        CONCOURSE_VAULT_CLIENT_TOKEN: hvs.CAESIC9wzsgw0a0W6cq1LG1UcqofJAcSxgzFEMrBnDTyECs8Gh4KHGh2cy5UQUZ2NHVINm1wb2pLNWRVSWNrQzNXUG8
+
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    worker:
+        image: concourse/concourse
+        command: worker
+        privileged: true
+        depends_on: [web]
+        volumes: ["./keys/worker:/concourse-keys"]
+        links: [web]
+        stop_signal: SIGUSR2
+        environment:
+        CONCOURSE_TSA_HOST: web:2222
+        # enable DNS proxy to support Docker's 127.x.x.x DNS server
+        CONCOURSE_GARDEN_DNS_PROXY_ENABLE: "true"
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+    ```
+
+
+- concourse を再起動
+
+    ```sh
+    $ docker-compose down
+    ```
+
+    ```sh
+    $ docker-compose up -d
+    ```
+
+# Concourse用のシークレットを作成
+
+- 以下のコマンドを実行
+
+    ```sh
+    $ vault secrets enable -version=1 -path concourse kv
+    ```
+
+    - 結果
+
+        ```
+        Success! Enabled the kv secrets engine at: concourse/
+        ```
+
+    - これでconcourse/以下に自由にkv型のデータを配置できるようになりました。
+
+- 参考にしているサイト
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+- のサンプルがよくわからないので、concourse の日本語チュートリアルでハンズオンを行ってみる
+- 参考にしたサイトは以下（Docker イメージの作成・利用）
+
+    https://concoursetutorial-ja.site.lkj.io/miscellaneous/docker-images
+
+
+## Docker イメージの作成・利用（Vault版）
+
+- 参考にしたサイトは以下（Docker イメージの作成・利用）
+
+    https://concoursetutorial-ja.site.lkj.io/miscellaneous/docker-images
+
+- 上記サイトの内容をVault で実装してみる
+
+- 以下のコマンドを実行し、`pipeline.yml`の内容を確認
+
+    ```sh
+    $ cd ~/concourse-tutorial/tutorials/miscellaneous/docker-images/
+    ```
+
+    ```sh
+    $ cat pipeline.yml 
+    ---
+
+    - 結果
+
+        ```
+        ---
+        resources:
+        - name: tutorial
+            type: git
+            source:
+            uri: https://github.com/drnic/concourse-tutorial.git
+            branch: develop
+
+        - name: hello-world-docker-image
+            type: docker-image
+            source:
+            email: ((docker-hub-email))
+            username: ((docker-hub-username))
+            password: ((docker-hub-password))
+            repository: ((docker-hub-username))/concourse-tutorial-hello-world
+
+        jobs:
+        - name: publish
+            public: true
+            plan:
+            - get: tutorial
+            - put: hello-world-docker-image
+                params:
+                build: tutorial/tutorials/miscellaneous/docker-images/docker
+            - task: run
+                config:
+                platform: linux
+                image_resource:
+                    type: docker-image
+                    source:
+                    repository: ((docker-hub-username))/concourse-tutorial-hello-world
+                run:
+                    path: /bin/hello-world
+                    args: []
+                params:
+                    NAME: ((docker-hub-username))
+        ```
+
+- 資格管理マネージャにパラメータを追加する
+
+    ```
+    # vault kv put concourse/main/push-docker-image/docker-hub-email value=moriyama.kazuhiro@earthsys-lab.co.jp
+    ```
+
+    - 結果
+
+        ```sh
+        Success! Data written to: concourse/main/push-docker-image/docker-hub-email
+        ```
+
+    ```
+    # vault kv put concourse/main/push-docker-image/docker-hub-username value=kuzumusen
+    ```
+
+    - 結果
+
+        ```sh
+        Success! Data written to: concourse/main/push-docker-image/docker-hub-username
+        ```
+
+    ```
+    # vault kv put concourse/main/push-docker-image/docker-hub-password value=z@yaNa053
+    ```
+
+    - 結果
+
+        ```sh
+        Success! Data written to: concourse/main/push-docker-image/docker-hub-password        
+        ```
+
+- コマンドを実行する（Concourse CI のWebUIへのログイン）
+
+    ```sh
+    $ fly --target tutorial login --concourse-url http://localhost:8080
+    ```
+
+    - 操作
+    - `http://localhost:8080/login?fly_port=43269` でホストOSのブラウザにアクセスし、表示されたtokenを貼り付ける
+    - ユーザID: `test`、パスワード: `test` とする
+    - 上記操作をすると、Concourse CI のWeb UIにログインできる
+
+        ```
+        logging in to team 'main'
+
+        navigate to the following URL in your browser:
+
+        http://localhost:8080/login?fly_port=43269
+
+        or enter token manually (input hidden): 
+        target saved
+        ```
+
+- パイプラインを削除する
+
+    ```sh
+    $ fly -t tutorial destroy-pipeline -p push-docker-image -n
+    ```
+
+- パイプラインを作成
+
+    ```sh
+    $ fly -t tutorial set-pipeline -p push-docker-image -c pipeline.yml -n
+    ```
+
+    - 結果
+
+        ```
+        resources:
+        resource tutorial has been added:
+        + name: tutorial
+        + source:
+        +   branch: develop
+        +   uri: https://github.com/drnic/concourse-tutorial.git
+        + type: git
+        
+        resource hello-world-docker-image has been added:
+        + name: hello-world-docker-image
+        + source:
+        +   email: ((docker-hub-email))
+        +   password: ((docker-hub-password))
+        +   repository: ((docker-hub-username))/concourse-tutorial-hello-world
+        +   username: ((docker-hub-username))
+        + type: docker-image
+        
+        jobs:
+        job publish has been added:
+        + name: publish
+        + plan:
+        + - get: tutorial
+        + - params:
+        +     build: tutorial/tutorials/miscellaneous/docker-images/docker
+        +   put: hello-world-docker-image
+        + - config:
+        +     image_resource:
+        +       name: ""
+        +       source:
+        +         repository: ((docker-hub-username))/concourse-tutorial-hello-world
+        +       type: docker-image
+        +     params:
+        +       NAME: ((docker-hub-username))
+        +     platform: linux
+        +     run:
+        +       path: /bin/hello-world
+        +   task: run
+        + public: true
+        
+        pipeline name: push-docker-image
+
+        pipeline created!
+        you can view your pipeline here: http://localhost:8080/teams/main/pipelines/push-docker-image
+
+        the pipeline is currently paused. to unpause, either:
+        - run the unpause-pipeline command:
+            fly -t tutorial unpause-pipeline -p push-docker-image
+        - click play next to the pipeline in the web ui
+        ```
+
+- パイプラインのリソースをチェック
+
+
+    ```
+    $ fly -t tutorial check-resource -r push-docker-image/tutorial
+    ```
+
+    - 結果
+
+        ```
+        checking push-docker-image/tutorial in build 2
+        initializing check: tutorial
+        selected worker: f464a80266c7
+        Cloning into '/tmp/git-resource-repo-cache'...
+        succeeded 
+        ```
+
+    ```sh
+    $ fly -t tutorial check-resource -r push-docker-image/hello-world-docker-image
+    ```
+
+    - 結果（成功した！！）
+
+        ```sh
+        checking push-docker-image/hello-world-docker-image in build 1
+        initializing check: hello-world-docker-image
+        selected worker: f464a80266c7
+        succeeded
+        ```
+
+- <span style="color: red; ">上手くいかない原因は、Vault のIPアドレスを '127.0.0.1' にしていたためであった！！！</span>
+
+- パイプラインを実行
+
+    ```sh
+    $ fly -t tutorial unpause-pipeline -p push-docker-image
+    ```
+
+    ```sh
+    $ fly -t tutorial trigger-job -j push-docker-image/publish -w
+    ```
+
+    - 結果
+
+        ```
+        started push-docker-image/publish #1
+
+        selected worker: f464a80266c7
+        Cloning into '/tmp/build/get'...
+        a3edcb3 restrict mkdocs packages until can make time to upgrade https://ci2.starkandwayne.com/teams/starkandwayne/pipelines/concourse-tutorial/jobs/website-master/builds/32
+        selected worker: f464a80266c7
+        waiting for docker to come up...
+        WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+        Configure a credential helper to remove this warning. See
+        https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+        Login Succeeded
+        DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+                    BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+                    environment-variable.
+
+        Sending build context to Docker daemon  3.072kB
+        Step 1/4 : FROM busybox
+        latest: Pulling from library/busybox
+        3f4d90098f5b: Pulling fs layer
+        3f4d90098f5b: Verifying Checksum
+        3f4d90098f5b: Download complete
+        3f4d90098f5b: Pull complete
+        Digest: sha256:3fbc632167424a6d997e74f52b878d7cc478225cffac6bc977eedfe51c7f4e79
+        Status: Downloaded newer image for busybox:latest
+        ---> a416a98b71e2
+        Step 2/4 : ADD hello-world /bin/hello-world
+        ---> 716d042dc3d6
+        Step 3/4 : ENV NAME=world
+        ---> Running in 0e0a884b4eb9
+        Removing intermediate container 0e0a884b4eb9
+        ---> 826457d4a3d9
+        Step 4/4 : ENTRYPOINT ["/bin/hello-world"]
+        ---> Running in a0c07fde1024
+        Removing intermediate container a0c07fde1024
+        ---> 979325d18092
+        Successfully built 979325d18092
+        Successfully tagged kuzumusen/concourse-tutorial-hello-world:latest
+        The push refers to repository [docker.io/kuzumusen/concourse-tutorial-hello-world]
+        fe220aae2b74: Preparing
+        3d24ee258efc: Preparing
+        3d24ee258efc: Mounted from library/busybox
+        fe220aae2b74: Pushed
+        latest: digest: sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6 size: 735
+        selected worker: f464a80266c7
+        waiting for docker to come up...
+        WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+        Configure a credential helper to remove this warning. See
+        https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+        Login Succeeded
+        Pulling kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6...
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6: Pulling from kuzumusen/concourse-tutorial-hello-world
+        3f4d90098f5b: Pulling fs layer
+        ab73f1c7c633: Pulling fs layer
+        3f4d90098f5b: Download complete
+        3f4d90098f5b: Pull complete
+        ab73f1c7c633: Download complete
+        ab73f1c7c633: Pull complete
+        Digest: sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6
+        Status: Downloaded newer image for kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6
+
+        Successfully pulled kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6.
+
+        initializing
+        initializing check: image
+        selected worker: f464a80266c7
+        selected worker: f464a80266c7
+        waiting for docker to come up...
+        Pulling kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6...
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6: Pulling from kuzumusen/concourse-tutorial-hello-world
+        3f4d90098f5b: Pulling fs layer
+        ab73f1c7c633: Pulling fs layer
+        3f4d90098f5b: Verifying Checksum
+        3f4d90098f5b: Download complete
+        ab73f1c7c633: Verifying Checksum
+        ab73f1c7c633: Download complete
+        3f4d90098f5b: Pull complete
+        ab73f1c7c633: Pull complete
+        Digest: sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6
+        Status: Downloaded newer image for kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6
+
+        Successfully pulled kuzumusen/concourse-tutorial-hello-world@sha256:0c7e17470159c7b034b281083e38cb717b1cf32b6e720757b9913e80941d44c6.
+
+        selected worker: f464a80266c7
+        running /bin/hello-world
+        hello kuzumusen
+        succeeded
+        ```

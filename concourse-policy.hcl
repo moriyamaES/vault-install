@@ -1,3 +1,3 @@
-    path "concourse/*" {
-            capabilities = ["read"]
-    }   
+path "concourse/*" {
+        capabilities = ["read"]
+}   

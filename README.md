@@ -964,7 +964,7 @@ Vaultのチュートリアル
 
 </del>
 
-- 以下のサイトを参考にして`/etc/vault.d/vault.hc1`を修正
+- 以下のサイトを参考にして`/etc/vault.d/vault.hcl`を修正
 
     [公式サイト](https://developer.hashicorp.com/vault/docs/configuration)
 
@@ -1527,3 +1527,1113 @@ Vaultのチュートリアル
         resource config creds evaluation: Get "http://127.0.0.1:8200/v1/sys/internal/ui/mounts/concourse/main/push-docker-image/docker-hub-username": dial tcp 127.0.0.1:8200: connect: connection refused (after 5 retries)
         errored
         ```
+
+# vault-install (やり直し)
+- VMをVaultインストール前に戻した
+
+## 参考
+
+- 以下のサイトを参考にしている
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+    - 公式サイトのインストール手順
+
+    https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-install
+
+## 環境
+
+    ```
+    # uname -a
+    Linux control-plane.minikube.internal 6.4.12-1.el7.elrepo.x86_64 #1 SMP PREEMPT_DYNAMIC Wed Aug 23 13:48:54 EDT 2023 x86_64 x86_64 x86_64 GNU/Linux
+    ```
+
+## インストール手順
+
+- 以下の公式サイトを参考にした
+
+    https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-install
+
+- 以下のコマンドを実行
+
+    ```
+    # sudo yum install -y yum-utils
+    ```
+
+    - 結果
+
+        ```
+        読み込んだプラグイン:fastestmirror, langpacks
+        Loading mirror speeds from cached hostfile
+        * base: ftp-srv2.kddilabs.jp
+        * elrepo: ftp.yz.yamagata-u.ac.jp
+        * extras: ftp-srv2.kddilabs.jp
+        * updates: ftp-srv2.kddilabs.jp
+        base                                                                                                                                                                                                                  | 3.6 kB  00:00:00     
+        docker-ce-stable                                                                                                                                                                                                      | 3.5 kB  00:00:00     
+        elrepo                                                                                                                                                                                                                | 3.0 kB  00:00:00     
+        extras                                                                                                                                                                                                                | 2.9 kB  00:00:00     
+        ius                                                                                                                                                                                                                   | 1.3 kB  00:00:00     
+        updates                                                                                                                                                                                                               | 2.9 kB  00:00:00     
+        docker-ce-stable/7/x86_64/primary_db                                                                                                                                                                                  | 117 kB  00:00:00     
+        パッケージ yum-utils-1.1.31-54.el7_8.noarch はインストール済みか最新バージョンです
+        何もしません
+        ```
+    ```
+    # sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    ```
+    
+    - 結果
+
+        ```
+        読み込んだプラグイン:fastestmirror, langpacks
+        adding repo from: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+        grabbing file https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo to /etc/yum.repos.d/hashicorp.repo
+        repo saved to /etc/yum.repos.d/hashicorp.repo
+        ```
+
+    ```
+    # sudo yum -y install vault
+    ```
+
+    - 結果
+
+        ```
+        読み込んだプラグイン:fastestmirror, langpacks
+        Loading mirror speeds from cached hostfile
+        * base: ftp-srv2.kddilabs.jp
+        * elrepo: ftp.yz.yamagata-u.ac.jp
+        * extras: ftp-srv2.kddilabs.jp
+        * updates: ftp-srv2.kddilabs.jp
+        hashicorp                                                                                                  | 1.4 kB  00:00:00     
+        hashicorp/7/x86_64/primary                                                                                 | 182 kB  00:00:00     
+        hashicorp                                                                                                               1313/1313
+        依存性の解決をしています
+        --> トランザクションの確認を実行しています。
+        ---> パッケージ vault.x86_64 0:1.14.2-1 を インストール
+        --> 依存性解決を終了しました。
+
+        依存性を解決しました
+
+        ==================================================================================================================================
+        Package                     アーキテクチャー             バージョン                        リポジトリー                     容量
+        ==================================================================================================================================
+        インストール中:
+        vault                       x86_64                       1.14.2-1                          hashicorp                       129 M
+
+        トランザクションの要約
+        ==================================================================================================================================
+        インストール  1 パッケージ
+
+        総ダウンロード容量: 129 M
+        インストール容量: 354 M
+        Downloading packages:
+        警告: /var/cache/yum/x86_64/7/hashicorp/packages/vault-1.14.2-1.x86_64.rpm: ヘッダー V4 RSA/SHA256 Signature、鍵 ID a621e701: NOKEY
+        vault-1.14.2-1.x86_64.rpm の公開鍵がインストールされていません
+        vault-1.14.2-1.x86_64.rpm                                                                                  | 129 MB  00:00:10     
+        https://rpm.releases.hashicorp.com/gpg から鍵を取得中です。
+        Importing GPG key 0xA621E701:
+        Userid     : "HashiCorp Security (HashiCorp Package Signing) <security+packaging@hashicorp.com>"
+        Fingerprint: 798a ec65 4e5c 1542 8c8e 42ee aa16 fcbc a621 e701
+        From       : https://rpm.releases.hashicorp.com/gpg
+        Running transaction check
+        Running transaction test
+        Transaction test succeeded
+        Running transaction
+        インストール中          : vault-1.14.2-1.x86_64                                                                             1/1Generating Vault TLS key and self-signed certificate...
+        Generating a 4096 bit RSA private key
+        ...................................................++
+        .........................................................................++
+        writing new private key to 'tls.key'
+        -----
+        Vault TLS key and self-signed certificate have been generated in '/opt/vault/tls'.
+        検証中                  : vault-1.14.2-1.x86_64                                                                             1/1 
+
+        インストール:
+        vault.x86_64 0:1.14.2-1                                                                                                         
+
+        完了しました!
+        ```
+
+- インストールの検証
+
+    ```
+    # vault
+    ```
+
+    - 結果
+
+        ```
+        Usage: vault <command> [args]
+
+        Common commands:
+            read        Read data and retrieves secrets
+            write       Write data, configuration, and secrets
+            delete      Delete secrets and configuration
+            list        List data or secrets
+            login       Authenticate locally
+            agent       Start a Vault agent
+            server      Start a Vault server
+            status      Print seal and HA status
+            unwrap      Unwrap a wrapped secret
+
+        Other commands:
+            audit                Interact with audit devices
+            auth                 Interact with auth methods
+            debug                Runs the debug command
+            events               
+            kv                   Interact with Vault's Key-Value storage
+            lease                Interact with leases
+            monitor              Stream log messages from a Vault server
+            namespace            Interact with namespaces
+            operator             Perform operator-specific tasks
+            patch                Patch data, configuration, and secrets
+            path-help            Retrieve API help for paths
+            pki                  Interact with Vault's PKI Secrets Engine
+            plugin               Interact with Vault plugins and catalog
+            policy               Interact with policies
+            print                Prints runtime configurations
+            proxy                Start a Vault Proxy
+            secrets              Interact with secrets engines
+            ssh                  Initiate an SSH session
+            token                Interact with tokens
+            transform            Interact with Vault's Transform Secrets Engine
+            transit              Interact with Vault's Transit Secrets Engine
+            version-history      Prints the version history of the target Vault server
+        ```
+
+    ```
+    # which vault 
+    /usr/bin/vault
+    ```
+
+    ```
+    # vault -v
+    Vault v1.14.2 (16a7033a0686eca50ee650880d5c55438d274489), built 2023-08-24T13:19:12Z
+    ```
+
+ ## vaultのコンフィグ 
+
+ - 以下のサイトを参考にして`/etc/vault.d/vault.hc1`を修正
+
+    [公式サイト](https://developer.hashicorp.com/vault/docs/configuration)
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+
+- 修正前の`/etc/vault.d/vault.hcl`は以下
+
+    ```
+    # cat /etc/vault.d/vault.hcl
+    ```
+
+    - 結果
+
+        ```
+        # Copyright (c) HashiCorp, Inc.
+        # SPDX-License-Identifier: MPL-2.0
+
+        # Full configuration options can be found at https://www.vaultproject.io/docs/configuration
+
+        ui = true
+
+        #mlock = true
+        #disable_mlock = true
+
+        storage "file" {
+        path = "/opt/vault/data"
+        }
+
+        #storage "consul" {
+        #  address = "127.0.0.1:8500"
+        #  path    = "vault"
+        #}
+
+        # HTTP listener
+        #listener "tcp" {
+        #  address = "127.0.0.1:8200"
+        #  tls_disable = 1
+        #}
+
+        # HTTPS listener
+        listener "tcp" {
+        address       = "0.0.0.0:8200"
+        tls_cert_file = "/opt/vault/tls/tls.crt"
+        tls_key_file  = "/opt/vault/tls/tls.key"
+        }
+
+        # Enterprise license_path
+        # This will be required for enterprise as of v1.8
+        #license_path = "/etc/vault.d/vault.hclic"
+
+        # Example AWS KMS auto unseal
+        #seal "awskms" {
+        #  region = "us-east-1"
+        #  kms_key_id = "REPLACE-ME"
+        #}
+
+        # Example HSM auto unseal
+        #seal "pkcs11" {
+        #  lib            = "/usr/vault/lib/libCryptoki2_64.so"
+        #  slot           = "0"
+        #  pin            = "AAAA-BBBB-CCCC-DDDD"
+        #  key_label      = "vault-hsm-key"
+        #  hmac_key_label = "vault-hsm-hmac-key"
+        #}
+        ```
+
+    ``` sh
+    > diff -u  etc/vault.d/vault.hcl_org /etc/vault.d/vault.hcl
+    ```
+
+    - 結果
+
+        ```diff
+        --- /etc/vault.d/vault.hcl_org  2023-09-07 20:38:03.816620134 +0900
+        +++ /etc/vault.d/vault.hcl      2023-09-07 20:45:02.270817911 +0900
+        @@ -6,7 +6,7 @@
+        ui = true
+        
+        #mlock = true
+        -#disable_mlock = true
+        +disable_mlock = true
+        
+        storage "file" {
+        path = "/opt/vault/data"
+        @@ -18,18 +18,18 @@
+        #}
+        
+        # HTTP listener
+        -#listener "tcp" {
+        -#  address = "127.0.0.1:8200"
+        -#  tls_disable = 1
+        -#}
+        -
+        -# HTTPS listener
+        listener "tcp" {
+        -  address       = "0.0.0.0:8200"
+        -  tls_cert_file = "/opt/vault/tls/tls.crt"
+        -  tls_key_file  = "/opt/vault/tls/tls.key"
+        +  address = "127.0.0.1:8200"
+        +  tls_disable = 1
+        }
+        
+        +# HTTPS listener
+        +#listener "tcp" {
+        +#  address       = "0.0.0.0:8200"
+        +#  tls_cert_file = "/opt/vault/tls/tls.crt"
+        +#  tls_key_file  = "/opt/vault/tls/tls.key"
+        +#}
+        +
+        # Enterprise license_path
+        # This will be required for enterprise as of v1.8
+        #license_path = "/etc/vault.d/vault.hclic"
+        @@ -48,3 +48,6 @@
+        #  key_label      = "vault-hsm-key"
+        #  hmac_key_label = "vault-hsm-hmac-key"
+        #}
+        +
+        +cluster_addr  = "https://127.0.0.1:8201"
+        +api_addr      = "https://127.0.0.1:8200"
+        ```
+    
+- 変更後
+
+    ```sh
+    cat /etc/vault.d/vault.hcl
+    # Copyright (c) HashiCorp, Inc.
+    # SPDX-License-Identifier: MPL-2.0
+
+    # Full configuration options can be found at https://www.vaultproject.io/docs/configuration
+
+    ui = true
+
+    #mlock = true
+    disable_mlock = true
+
+    storage "file" {
+    path = "/opt/vault/data"
+    }
+
+    #storage "consul" {
+    #  address = "127.0.0.1:8500"
+    #  path    = "vault"
+    #}
+
+    # HTTP listener
+    listener "tcp" {
+    address = "127.0.0.1:8200"
+    tls_disable = 1
+    }
+
+    # HTTPS listener
+    #listener "tcp" {
+    #  address       = "0.0.0.0:8200"
+    #  tls_cert_file = "/opt/vault/tls/tls.crt"
+    #  tls_key_file  = "/opt/vault/tls/tls.key"
+    #}
+
+    # Enterprise license_path
+    # This will be required for enterprise as of v1.8
+    #license_path = "/etc/vault.d/vault.hclic"
+
+    # Example AWS KMS auto unseal
+    #seal "awskms" {
+    #  region = "us-east-1"
+    #  kms_key_id = "REPLACE-ME"
+    #}
+
+    # Example HSM auto unseal
+    #seal "pkcs11" {
+    #  lib            = "/usr/vault/lib/libCryptoki2_64.so"
+    #  slot           = "0"
+    #  pin            = "AAAA-BBBB-CCCC-DDDD"
+    #  key_label      = "vault-hsm-key"
+    #  hmac_key_label = "vault-hsm-hmac-key"
+    #}
+
+    cluster_addr  = "https://127.0.0.1:8201"
+    api_addr      = "https://127.0.0.1:8200"
+    ```
+
+- vaultコマンドに今どこのvaultを設定するのかってのを教えてやる。それは環境変数です
+- HTTPにする
+
+    ```sh
+    export VAULT_ADDR='http://127.0.0.1:8200'
+    ```
+
+    ```sh
+    echo $VAULT_ADDR
+    http://127.0.0.1:8200
+    ```
+
+- vault を起動する。
+- 参考サイトにはこのコマンドがない
+
+    ```sh
+    > systemctl start vault.service
+    ```
+
+    ```sh
+    > systemctl status vault.service
+    ```
+
+    - 結果
+
+        ```sh
+        ● vault.service - "HashiCorp Vault - A tool for managing secrets"
+        Loaded: loaded (/usr/lib/systemd/system/vault.service; disabled; vendor preset: disabled)
+        Active: active (running) since 木 2023-09-07 21:27:00 JST; 9s ago
+            Docs: https://www.vaultproject.io/docs/
+        Main PID: 13661 (vault)
+            Tasks: 7
+        Memory: 53.8M
+        CGroup: /system.slice/vault.service
+                └─13661 /usr/bin/vault server -config=/etc/vault.d/vault.hcl
+
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: Log Level:
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: Mlock: supported: true, enabled: false
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: Recovery Mode: false
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: Storage: file
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: Version: Vault v1.14.2, built 2023-08-24T13:19:12Z
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: Version Sha: 16a7033a0686eca50ee650880d5c55438d274489
+        9月 07 21:27:00 control-plane.minikube.internal systemd[1]: Started "HashiCorp Vault - A tool for managing secrets".
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: ==> Vault server started! Log data will stream in below:
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: 2023-09-07T21:27:00.401+0900 [INFO]  proxy environment: htt...y=""
+        9月 07 21:27:00 control-plane.minikube.internal vault[13661]: 2023-09-07T21:27:00.418+0900 [INFO]  core: Initializing ver...core
+        Hint: Some lines were ellipsized, use -l to show in full.        
+        ```
+
+- ポートの使用状況を確認
+
+    ```sh
+    $ sudo netstat -tuln | grep -e "8200" -e "8201" 
+    tcp        0      0 127.0.0.1:8200          0.0.0.0:*               LISTEN 
+    ```
+
+- vault を初期化
+
+    ```sh
+    $ vault operator init
+    ```
+
+    - 結果
+
+        ```sh
+        Unseal Key 1: 8xo+4C5UI/rOeU7wZNi4Qs1S6JojwgOROhlbTrfis+eG
+        Unseal Key 2: Lim8YfM2xWkzAz/ZoVmlrJwFdyX1CzVxP2HhdZluSzL5
+        Unseal Key 3: ad6nN19vKJNUR6RFZ0Ysu5eoTbLgY8AbFYulJdmKFvmr
+        Unseal Key 4: hN0xF1UXmhCmzPmYeDIq1oaVDh8qI1duGsEAbW6l4tR0
+        Unseal Key 5: 80W1xofM4bYxwMqxYI9LbzxbB5sP1uSlpWo+EeaExaYZ
+
+        Initial Root Token: hvs.suX0HFLMYSOPjrucW8SPNyMG
+
+        Vault initialized with 5 key shares and a key threshold of 3. Please securely
+        distribute the key shares printed above. When the Vault is re-sealed,
+        restarted, or stopped, you must supply at least 3 of these keys to unseal it
+        before it can start servicing requests.
+
+        Vault does not store the generated root key. Without at least 3 keys to
+        reconstruct the root key, Vault will remain permanently sealed!
+
+        It is possible to generate new unseal keys, provided you have a quorum of
+        existing unseal keys shares. See "vault operator rekey" for more information.
+        ```
+
+- 以下のコマンドを実行（5つのUnseal Keyの内、3つのUnseal Keyを3回に分け入力）
+
+    ```sh 
+    $ sudo vault operator unseal
+    ```
+
+    - 結果 (エラー)
+
+        ```sh
+        Unseal Key (will be hidden): 
+        Error unsealing: Put "https://127.0.0.1:8200/v1/sys/unseal": http: server gave HTTP response to HTTPS client
+        ```
+
+- `/etc/vault.d/vault.hcl`に誤りを発見
+
+    ```diff
+    $ sudo diff -u /etc/vault.d/vault.hcl_old /etc//vault.d//vault.hcl
+    --- /etc/vault.d/vault.hcl_old  2023-09-07 21:45:18.590872923 +0900
+    +++ /etc//vault.d//vault.hcl    2023-09-07 21:46:19.481233421 +0900
+    @@ -49,5 +49,5 @@
+    #  hmac_key_label = "vault-hsm-hmac-key"
+    #}
+    
+    -cluster_addr  = "https://127.0.0.1:8201"
+    -api_addr      = "https://127.0.0.1:8200"
+    +cluster_addr  = "http://127.0.0.1:8201"
+    +api_addr      = "http://127.0.0.1:8200"
+    ```
+
+- 変更後
+
+    ```sh
+    $ cat  /etc/vault.d/vault.hcl
+    # Copyright (c) HashiCorp, Inc.
+    # SPDX-License-Identifier: MPL-2.0
+
+    # Full configuration options can be found at https://www.vaultproject.io/docs/configuration
+
+    ui = true
+
+    #mlock = true
+    disable_mlock = true
+
+    storage "file" {
+    path = "/opt/vault/data"
+    }
+
+    #storage "consul" {
+    #  address = "127.0.0.1:8500"
+    #  path    = "vault"
+    #}
+
+    # HTTP listener
+    listener "tcp" {
+    address = "127.0.0.1:8200"
+    tls_disable = 1
+    }
+
+    # HTTPS listener
+    #listener "tcp" {
+    #  address       = "0.0.0.0:8200"
+    #  tls_cert_file = "/opt/vault/tls/tls.crt"
+    #  tls_key_file  = "/opt/vault/tls/tls.key"
+    #}
+
+    # Enterprise license_path
+    # This will be required for enterprise as of v1.8
+    #license_path = "/etc/vault.d/vault.hclic"
+
+    # Example AWS KMS auto unseal
+    #seal "awskms" {
+    #  region = "us-east-1"
+    #  kms_key_id = "REPLACE-ME"
+    #}
+
+    # Example HSM auto unseal
+    #seal "pkcs11" {
+    #  lib            = "/usr/vault/lib/libCryptoki2_64.so"
+    #  slot           = "0"
+    #  pin            = "AAAA-BBBB-CCCC-DDDD"
+    #  key_label      = "vault-hsm-key"
+    #  hmac_key_label = "vault-hsm-hmac-key"
+    #}
+
+    cluster_addr  = "http://127.0.0.1:8201"
+    api_addr      = "http://127.0.0.1:8200"
+    ```
+
+- vault を再起動
+
+    ```sh
+    $ sudo systemctl restart vault.service
+    ```
+
+    ```sh
+    $ sudo systemctl status  vault.service
+    ● vault.service - "HashiCorp Vault - A tool for managing secrets"
+    Loaded: loaded (/usr/lib/systemd/system/vault.service; disabled; vendor preset: disabled)
+    Active: active (running) since 木 2023-09-07 21:52:51 JST; 1min 11s ago
+        Docs: https://www.vaultproject.io/docs/
+    Main PID: 17011 (vault)
+        Tasks: 7
+    Memory: 25.1M
+    CGroup: /system.slice/vault.service
+            └─17011 /usr/bin/vault server -config=/etc/vault.d/vault.hcl
+
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: Log Level:
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: Mlock: supported: true, enabled: false
+    9月 07 21:52:51 control-plane.minikube.internal systemd[1]: Started "HashiCorp Vault - A tool for managing secrets".
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: Recovery Mode: false
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: Storage: file
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: Version: Vault v1.14.2, built 2023-08-24T13:19:12Z
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: Version Sha: 16a7033a0686eca50ee650880d5c55438d274489
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: ==> Vault server started! Log data will stream in below:
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: 2023-09-07T21:52:51.866+0900 [INFO]  proxy environment: htt...y=""
+    9月 07 21:52:51 control-plane.minikube.internal vault[17011]: 2023-09-07T21:52:51.867+0900 [INFO]  core: Initializing ver...core
+    Hint: Some lines were ellipsized, use -l to show in full.
+    ```
+
+## vault unseal
+
+- 以下のコマンドを実行（5つのUnseal Keyの内、3つのUnseal Keyを3回に分け入力）
+
+    ```
+    $ vault operator unseal
+    ```
+
+-   Root Tokenを使ってログイン
+
+    ```
+    $ vault login
+    ```
+
+- Concourse用のロールとtokenを作成
+- 以下のコマンドを実行
+
+    ```sh
+    $ cd /root/vault-install
+    ```
+
+    ```sh
+    $ cat << EOF > concourse-policy.hcl
+    path "concourse/*" {
+            capabilities = ["read"]
+    }   
+    EOF
+    ```
+
+    ```sh
+    $ cat concourse-policy.hcl
+    path "concourse/*" {
+        capabilities = ["read"]
+    }   
+    ```
+
+- concourseポリシーを作る。
+
+    ```sh
+    $ vault policy write concourse ./concourse-policy.hcl
+    Success! Uploaded policy: concourse
+    ```
+
+    ```sh
+    $ vault policy read concourse
+    path "concourse/*" {
+        capabilities = ["read"]
+    }    
+    ```
+
+     - これでconcourseポリシーを作ることができました。
+
+- そしたらconcourseポリシーに基づいたtokenを発行します。
+
+    ```
+    $ vault token create --policy concourse
+    Key                  Value
+    ---                  -----
+    token                hvs.CAESIL5D30bmYnQZBbcpPu8AfJ9CAlaQSTF5cyhdYdex8muVGh4KHGh2cy5LRWRRREVQQTR3QkJOclc2eFQ1TGZRUVM
+    token_accessor       bwG96AYBeRjFHbpPfj4boKvU
+    token_duration       768h
+    token_renewable      true
+    token_policies       ["concourse" "default"]
+    identity_policies    []
+    policies             ["concourse" "default"]
+    ```
+
+
+## concourseCIとvaultを接続
+
+- 以下のサイトを参考にした
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+    https://concourse-ci.org/vault-credential-manager.html
+
+- 先程のトークンをconcourseCIに設定します！docker-composeファイルに以下を追記するだけです。
+- To configure this, first configure the URL of your Vault server by setting the following env on the web node
+
+    ```sh
+    $ cd ~/concourse-install
+    ```
+
+- concourseの`docker-compose.yml`（変更後）
+
+    ```sh
+    $ cat docker-compose.yml
+    version: '3'
+
+    services:
+    db:
+        image: postgres
+        environment:
+        POSTGRES_DB: concourse
+        POSTGRES_USER: concourse_user
+        POSTGRES_PASSWORD: concourse_pass
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    web:
+        image: concourse/concourse
+        command: web
+        links: [db]
+        depends_on: [db]
+        ports: ["8080:8080"]
+        volumes: ["./keys/web:/concourse-keys"]
+        environment:
+        CONCOURSE_EXTERNAL_URL: http://localhost:8080
+        CONCOURSE_POSTGRES_HOST: db
+        CONCOURSE_POSTGRES_USER: concourse_user
+        CONCOURSE_POSTGRES_PASSWORD: concourse_pass
+        CONCOURSE_POSTGRES_DATABASE: concourse
+        CONCOURSE_ADD_LOCAL_USER: test:test
+        CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+        CONCOURSE_VAULT_URL: http://127.0.0.1:8200
+        CONCOURSE_VAULT_CLIENT_TOKEN: hvs.CAESII7rrevJiuWGuxuBao28rbs1OnmdLUMV2g05hdXd84uQGh4KHGh2cy5oeGwxeEZoUDFqUVBYU2JsMTRoc3pxSFg
+
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+
+    worker:
+        image: concourse/concourse
+        command: worker
+        privileged: true
+        depends_on: [web]
+        volumes: ["./keys/worker:/concourse-keys"]
+        links: [web]
+        stop_signal: SIGUSR2
+        environment:
+        CONCOURSE_TSA_HOST: web:2222
+        # enable DNS proxy to support Docker's 127.x.x.x DNS server
+        CONCOURSE_GARDEN_DNS_PROXY_ENABLE: "true"
+        logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"   
+    ```
+
+- concourse を起動
+
+    ```sh
+    $ docker-compose up -d
+    [+] Running 3/3
+    ✔ Container concourse-install-db-1      Started                                                                                                0.0s 
+    ✔ Container concourse-install-web-1     Started                                                                                                0.1s 
+    ✔ Container concourse-install-worker-1  Started 
+    ```
+
+
+## Concourse用のシークレットを作成
+
+- 以下のコマンドを実行
+
+    ```sh
+    $ vault secrets enable -version=1 -path concourse kv
+    Success! Enabled the kv secrets engine at: concourse/
+    ```
+
+    - これでconcourse/以下に自由にkv型のデータを配置できるようになりました。
+
+- 参考にしているサイト
+
+    https://gammalab.net/blog/3f7pudgk4zbcr/
+
+- のサンプルがよくわからないので、concourse の日本語チュートリアルでハンズオンを行ってみる
+- 参考にしたサイトは以下（Docker イメージの作成・利用）
+
+    https://concoursetutorial-ja.site.lkj.io/miscellaneous/docker-images
+
+
+## Docker イメージの作成・利用（Vault版）
+
+- 参考にしたサイトは以下（Docker イメージの作成・利用）
+
+    https://concoursetutorial-ja.site.lkj.io/miscellaneous/docker-images
+
+- 上記サイトの内容をVault で実装してみる
+
+- 以下のコマンドを実行し、`pipeline.yml`の内容を確認
+
+    ```sh
+    $ cd ~/concourse-tutorial/tutorials/miscellaneous/docker-images/
+    ```
+
+    ```
+    $ cat pipeline.yml 
+    ---
+    resources:
+    - name: tutorial
+        type: git
+        source:
+        uri: https://github.com/drnic/concourse-tutorial.git
+        branch: develop
+
+    - name: hello-world-docker-image
+        type: docker-image
+        source:
+        email: ((docker-hub-email))
+        username: ((docker-hub-username))
+        password: ((docker-hub-password))
+        repository: ((docker-hub-username))/concourse-tutorial-hello-world
+
+    jobs:
+    - name: publish
+        public: true
+        plan:
+        - get: tutorial
+        - put: hello-world-docker-image
+            params:
+            build: tutorial/tutorials/miscellaneous/docker-images/docker
+        - task: run
+            config:
+            platform: linux
+            image_resource:
+                type: docker-image
+                source:
+                repository: ((docker-hub-username))/concourse-tutorial-hello-world
+            run:
+                path: /bin/hello-world
+                args: []
+            params:
+                NAME: ((docker-hub-username))
+    ```
+
+- 資格管理マネージャにパラメータを追加する
+
+    ```sh
+    $ vault kv put concourse/main/push-docker-image/docker-hub-email value=moriyama.kazuhiro@earthsys-lab.co.jp
+    Success! Data written to: concourse/main/push-docker-image/docker-hub-email
+    ```
+
+    ```sh
+    $ vault kv put concourse/main/push-docker-image/docker-hub-username value=kuzumusen
+    Success! Data written to: concourse/main/push-docker-image/docker-hub-username
+    ```
+
+    ```sh
+    $ vault kv put concourse/main/push-docker-image/docker-hub-password value=z@yaNa053
+    Success! Data written to: concourse/main/push-docker-image/docker-hub-password
+    ```
+
+- コマンドを実行する（Concourse CI のWebUIへのログイン）
+
+    ```
+    $ fly --target tutorial login --concourse-url http://localhost:8080
+    ```
+
+    - 操作
+    - `http://localhost:8080/login?fly_port=43269` でホストOSのブラウザにアクセスし、表示されたtokenを貼り付ける
+    - ユーザID: `test`、パスワード: `test` とする
+    - 上記操作をすると、Concourse CI のWeb UIにログインできる
+
+        ```
+        logging in to team 'main'
+
+        navigate to the following URL in your browser:
+
+        http://localhost:8080/login?fly_port=43269
+
+        or enter token manually (input hidden): 
+        target saved
+        ```
+
+- パイプラインを削除する
+
+    ```
+    $ fly -t tutorial destroy-pipeline -p push-docker-image -n
+    ```
+
+-　パイプラインを作成
+
+    ```
+    $ fly -t tutorial set-pipeline -p push-docker-image -c pipeline.yml -n
+    resources:
+    resource hello-world-docker-image has changed:
+    name: hello-world-docker-image
+    source:
+    -   email: moriyama.kazuhiro@earthsys-lab.co.jp
+    -   password: z@yaNa053
+    -   repository: kuzumusen/concourse-tutorial-hello-world
+    -   username: kuzumusen
+    +   email: ((docker-hub-email))
+    +   password: ((docker-hub-password))
+    +   repository: ((docker-hub-username))/concourse-tutorial-hello-world
+    +   username: ((docker-hub-username))
+    type: docker-image
+    
+    jobs:
+    job publish has changed:
+    name: publish
+    plan:
+    - get: tutorial
+    - params:
+        build: tutorial/tutorials/miscellaneous/docker-images/docker
+        put: hello-world-docker-image
+    - config:
+        image_resource:
+            name: ""
+            source:
+    -         repository: kuzumusen/concourse-tutorial-hello-world
+    +         repository: ((docker-hub-username))/concourse-tutorial-hello-world
+            type: docker-image
+        params:
+    -       NAME: kuzumusen
+    +       NAME: ((docker-hub-username))
+        platform: linux
+        run:
+            path: /bin/hello-world
+        task: run
+    public: true
+    
+    pipeline name: push-docker-image
+
+    configuration updated
+    ```
+
+- パイプラインのリソースをチェック
+
+    ```
+    $ fly -t tutorial check-resource -r push-docker-image/hello-world-docker-image
+    resource config creds evaluation: Get "http://127.0.0.1:8200/v1/sys/internal/ui/mounts/concourse/main/push-docker-image/docker-hub-email": dial tcp 127.0.0.1:8200: connect: connection refused (after 5 retries)
+    errored
+    ```
+
+## 上手くいかない。→ Vault のIPを 127.0.0.1 から 10.1.1.200 に変更してみる
+
+-  変更内容
+
+    ```diff
+    # diff -u  /etc/vault.d/vault.hcl_old /etc/vault.d/vault.hcl
+    --- /etc/vault.d/vault.hcl_old  2023-09-07 21:45:18.590872923 +0900
+    +++ /etc/vault.d/vault.hcl      2023-09-09 22:35:18.308618724 +0900
+    @@ -19,7 +19,8 @@
+    
+    # HTTP listener
+    listener "tcp" {
+    -  address = "127.0.0.1:8200"
+    +#  address = "127.0.0.1:8200"
+    +  address = "10.1.1.200:8200"
+    tls_disable = 1
+    }
+    
+    @@ -49,5 +50,7 @@
+    #  hmac_key_label = "vault-hsm-hmac-key"
+    #}
+    
+    -cluster_addr  = "https://127.0.0.1:8201"
+    -api_addr      = "https://127.0.0.1:8200"
+    +# cluster_addr  = "http://127.0.0.1:8201"
+    +cluster_addr  = "http://10.1.1.200:8201"
+    +# api_addr      = "http://127.0.0.1:8200"
+    +api_addr      = "http://10.1.1.200:8200"
+    ```
+
+- 変更後
+
+    ```sh
+    cat /etc/vault.d/vault.hcl
+    # Copyright (c) HashiCorp, Inc.
+    # SPDX-License-Identifier: MPL-2.0
+
+    # Full configuration options can be found at https://www.vaultproject.io/docs/configuration
+
+    ui = true
+
+    #mlock = true
+    disable_mlock = true
+
+    storage "file" {
+    path = "/opt/vault/data"
+    }
+
+    #storage "consul" {
+    #  address = "127.0.0.1:8500"
+    #  path    = "vault"
+    #}
+
+    # HTTP listener
+    listener "tcp" {
+    #  address = "127.0.0.1:8200"
+    address = "10.1.1.200:8200"
+    tls_disable = 1
+    }
+
+    # HTTPS listener
+    #listener "tcp" {
+    #  address       = "0.0.0.0:8200"
+    #  tls_cert_file = "/opt/vault/tls/tls.crt"
+    #  tls_key_file  = "/opt/vault/tls/tls.key"
+    #}
+
+    # Enterprise license_path
+    # This will be required for enterprise as of v1.8
+    #license_path = "/etc/vault.d/vault.hclic"
+
+    # Example AWS KMS auto unseal
+    #seal "awskms" {
+    #  region = "us-east-1"
+    #  kms_key_id = "REPLACE-ME"
+    #}
+
+    # Example HSM auto unseal
+    #seal "pkcs11" {
+    #  lib            = "/usr/vault/lib/libCryptoki2_64.so"
+    #  slot           = "0"
+    #  pin            = "AAAA-BBBB-CCCC-DDDD"
+    #  key_label      = "vault-hsm-key"
+    #  hmac_key_label = "vault-hsm-hmac-key"
+    #}
+
+    # cluster_addr  = "http://127.0.0.1:8201"
+    cluster_addr  = "http://10.1.1.200:8201"
+    # api_addr      = "http://127.0.0.1:8200"
+    api_addr      = "http://10.1.1.200:8200"
+    ```
+
+- vault を再起動
+
+
+    ```sh
+    $ systemctl status vault.service 
+    ● vault.service - "HashiCorp Vault - A tool for managing secrets"
+    Loaded: loaded (/usr/lib/systemd/system/vault.service; disabled; vendor preset: disabled)
+    Active: inactive (dead)
+        Docs: https://www.vaultproject.io/docs/
+
+    9月 09 22:41:10 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:7] Unknown lvalue 'StartLimitIntervalSec' in section 'Unit'
+    9月 09 22:41:10 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:8] Unknown lvalue 'StartLimitBurst' in section 'Unit'    
+    ```
+
+    ```sh
+    systemctl start vault.service 
+    ```
+
+    ```sh
+    systemctl status vault.service 
+    ● vault.service - "HashiCorp Vault - A tool for managing secrets"
+    Loaded: loaded (/usr/lib/systemd/system/vault.service; disabled; vendor preset: disabled)
+    Active: active (running) since 土 2023-09-09 22:43:37 JST; 5s ago
+        Docs: https://www.vaultproject.io/docs/
+    Main PID: 16088 (vault)
+        Tasks: 7
+    Memory: 250.6M
+    CGroup: /system.slice/vault.service
+            └─16088 /usr/bin/vault server -config=/etc/vault.d/vault.hcl
+
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: Log Level:
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: Mlock: supported: true, enabled: false
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: Recovery Mode: false
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: Storage: file
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: Version: Vault v1.14.2, built 2023-08-24T13:19:12Z
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: Version Sha: 16a7033a0686eca50ee650880d5c55438d274489
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: ==> Vault server started! Log data will stream in below:
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: 2023-09-09T22:43:37.309+0900 [INFO]  proxy environment: http_proxy="" https_proxy="" no_proxy=""
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: 2023-09-09T22:43:37.317+0900 [INFO]  core: Initializing version history cache for core
+    9月 09 22:43:37 control-plane.minikube.internal systemd[1]: Started "HashiCorp Vault - A tool for managing secrets".
+    ```
+
+    ```sh
+    sudo netstat -tuln | grep 8200
+    tcp        0      0 10.1.1.200:8200         0.0.0.0:*               LISTEN
+    ```
+
+    ```sh
+    $ vault policy read concourse
+    Error reading policy named concourse: Get "https://127.0.0.1:8200/v1/sys/policies/acl/concourse": dial tcp 127.0.0.1:8200: connect: connection refused
+    ```
+
+- 以下のコマンドを実行（5つのUnseal Keyの内、3つのUnseal Keyを3回に分け入力）
+
+    ```sh 
+    $ sudo vault operator unseal
+    ```
+
+    ```
+    # vault operator unseal
+    Unseal Key (will be hidden): 
+    Error unsealing: Put "https://127.0.0.1:8200/v1/sys/unseal": dial tcp 127.0.0.1:8200: connect: connection refuse
+    ```
+
+- vaultは途中でIPアドレスを変えることができそう
+
+# valte を再初期化してみる
+
+
+- Vaultを停止します。
+
+
+    ```sh
+    $ systemctl stop vault.service
+    ```
+
+    ```sh
+    $ systemctl status vault.service 
+    ● vault.service - "HashiCorp Vault - A tool for managing secrets"
+    Loaded: loaded (/usr/lib/systemd/system/vault.service; disabled; vendor preset: disabled)
+    Active: inactive (dead)
+        Docs: https://www.vaultproject.io/docs/
+
+    9月 09 22:43:37 control-plane.minikube.internal vault[16088]: 2023-09-09T22:43:37.317+0900 [INFO]  core: Initializing version history cache for core
+    9月 09 22:43:37 control-plane.minikube.internal systemd[1]: Started "HashiCorp Vault - A tool for managing secrets".
+    9月 09 23:06:09 control-plane.minikube.internal systemd[1]: Stopping "HashiCorp Vault - A tool for managing secrets"...
+    9月 09 23:06:09 control-plane.minikube.internal systemd[1]: Stopped "HashiCorp Vault - A tool for managing secrets".
+    9月 09 23:06:09 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:7] Unknown lvalue 'StartLimitIntervalSec' in section 'Unit'
+    9月 09 23:06:09 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:8] Unknown lvalue 'StartLimitBurst' in section 'Unit'
+    9月 09 23:06:09 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:7] Unknown lvalue 'StartLimitIntervalSec' in section 'Unit'
+    9月 09 23:06:09 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:8] Unknown lvalue 'StartLimitBurst' in section 'Unit'
+    9月 09 23:07:03 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:7] Unknown lvalue 'StartLimitIntervalSec' in section 'Unit'
+    9月 09 23:07:03 control-plane.minikube.internal systemd[1]: [/usr/lib/systemd/system/vault.service:8] Unknown lvalue 'StartLimitBurst' in section 'Unit'
+    ```
+
+
+<deL>
+- 既存のVaultデータディレクトリをバックアップします（必要な場合）。
+</del>
+
+- Vaultの初期化コマンドを実行して新しい初期化トークンを生成します
+
+- vault を初期化する
+
+    ```
+    # vault operator init
+    Get "https://127.0.0.1:8200/v1/sys/seal-status": dial tcp 127.0.0.1:8200: connect: connection refused    
+    ```
+
+- IPを変えると初期化もできない
+- インストールしなおすしかない
+
+
+## Vault をインストールしなおし（IPは、 10.1.1.200） 

@@ -3015,63 +3015,67 @@ Vaultのチュートリアル
     ```
 
     ```sh
-    version: '3'
-
-    services:
-    db:
-        image: postgres
-        environment:
-        POSTGRES_DB: concourse
-        POSTGRES_USER: concourse_user
-        POSTGRES_PASSWORD: concourse_pass
-        logging:
-        driver: "json-file"
-        options:
-            max-file: "5"
-            max-size: "10m"
-
-    web:
-        image: concourse/concourse
-        command: web
-        links: [db]
-        depends_on: [db]
-        ports: ["8080:8080"]
-        volumes: ["./keys/web:/concourse-keys"]
-        environment:
-        CONCOURSE_EXTERNAL_URL: http://localhost:8080
-        CONCOURSE_POSTGRES_HOST: db
-        CONCOURSE_POSTGRES_USER: concourse_user
-        CONCOURSE_POSTGRES_PASSWORD: concourse_pass
-        CONCOURSE_POSTGRES_DATABASE: concourse
-        CONCOURSE_ADD_LOCAL_USER: test:test
-        CONCOURSE_MAIN_TEAM_LOCAL_USER: test
-        CONCOURSE_VAULT_URL: http://10.1.1.200:8200
-        CONCOURSE_VAULT_CLIENT_TOKEN: hvs.CAESIC9wzsgw0a0W6cq1LG1UcqofJAcSxgzFEMrBnDTyECs8Gh4KHGh2cy5UQUZ2NHVINm1wb2pLNWRVSWNrQzNXUG8
-
-        logging:
-        driver: "json-file"
-        options:
-            max-file: "5"
-            max-size: "10m"
-
-    worker:
-        image: concourse/concourse
-        command: worker
-        privileged: true
-        depends_on: [web]
-        volumes: ["./keys/worker:/concourse-keys"]
-        links: [web]
-        stop_signal: SIGUSR2
-        environment:
-        CONCOURSE_TSA_HOST: web:2222
-        # enable DNS proxy to support Docker's 127.x.x.x DNS server
-        CONCOURSE_GARDEN_DNS_PROXY_ENABLE: "true"
-        logging:
-        driver: "json-file"
-        options:
-            max-file: "5"
-            max-size: "10m"
+    $ cat docker-compose.yml
     ```
+
+        ```sh
+        version: '3'
+
+        services:
+        db:
+            image: postgres
+            environment:
+            POSTGRES_DB: concourse
+            POSTGRES_USER: concourse_user
+            POSTGRES_PASSWORD: concourse_pass
+            logging:
+            driver: "json-file"
+            options:
+                max-file: "5"
+                max-size: "10m"
+
+        web:
+            image: concourse/concourse
+            command: web
+            links: [db]
+            depends_on: [db]
+            ports: ["8080:8080"]
+            volumes: ["./keys/web:/concourse-keys"]
+            environment:
+            CONCOURSE_EXTERNAL_URL: http://localhost:8080
+            CONCOURSE_POSTGRES_HOST: db
+            CONCOURSE_POSTGRES_USER: concourse_user
+            CONCOURSE_POSTGRES_PASSWORD: concourse_pass
+            CONCOURSE_POSTGRES_DATABASE: concourse
+            CONCOURSE_ADD_LOCAL_USER: test:test
+            CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+            CONCOURSE_VAULT_URL: http://10.1.1.200:8200
+            CONCOURSE_VAULT_CLIENT_TOKEN: hvs.CAESIC9wzsgw0a0W6cq1LG1UcqofJAcSxgzFEMrBnDTyECs8Gh4KHGh2cy5UQUZ2NHVINm1wb2pLNWRVSWNrQzNXUG8
+
+            logging:
+            driver: "json-file"
+            options:
+                max-file: "5"
+                max-size: "10m"
+
+        worker:
+            image: concourse/concourse
+            command: worker
+            privileged: true
+            depends_on: [web]
+            volumes: ["./keys/worker:/concourse-keys"]
+            links: [web]
+            stop_signal: SIGUSR2
+            environment:
+            CONCOURSE_TSA_HOST: web:2222
+            # enable DNS proxy to support Docker's 127.x.x.x DNS server
+            CONCOURSE_GARDEN_DNS_PROXY_ENABLE: "true"
+            logging:
+            driver: "json-file"
+            options:
+                max-file: "5"
+                max-size: "10m"
+        ```
 
 
 - concourse を再起動
@@ -3290,7 +3294,6 @@ Vaultのチュートリアル
 
 - パイプラインのリソースをチェック
 
-
     ```
     $ fly -t tutorial check-resource -r push-docker-image/tutorial
     ```
@@ -3436,4 +3439,489 @@ Vaultのチュートリアル
 
     https://ik.am/entries/432
 
-    sss
+
+- vaultコマンドに今どこのvaultを設定するのかってのを教えてやる。それは環境変数です
+- HTTPにする
+
+    ```sh
+    $ export VAULT_ADDR='http://10.1.1.200:8200'
+    ```
+
+    ```sh
+    $ echo $VAULT_ADDR 
+    http://10.1.1.200:8200
+    ```
+
+    - vault を起動する。
+
+    ```
+    $ sudo systemctl start vault.service
+    ```
+
+    ```
+    $ sudo systemctl status vault.service
+    ```
+
+    - 結果
+
+        ```sh
+        ● vault.service - "HashiCorp Vault - A tool for managing secrets"
+        Loaded: loaded (/usr/lib/systemd/system/vault.service; disabled; vendor preset: disabled)
+        Active: active (running) since 日 2023-09-10 09:18:22 JST; 11s ago
+            Docs: https://www.vaultproject.io/docs/
+        Main PID: 6140 (vault)
+            Tasks: 7
+        Memory: 250.6M
+        CGroup: /system.slice/vault.service
+                └─6140 /usr/bin/vault server -config=/etc/vault.d/vault.hcl
+
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: Log Level:
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: Mlock: supported: true, enabled: false
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: Recovery Mode: false
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: Storage: file
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: Version: Vault v1.14.2, built 2023-08-24T13:19:12Z
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: Version Sha: 16a7033a0686eca50ee650880d5c55438d274489
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: ==> Vault server started! Log data will stream in below:
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: 2023-09-10T09:18:22.165+0900 [INFO]  proxy environment: http_proxy="" https_...oxy=""
+        9月 10 09:18:22 control-plane.minikube.internal vault[6140]: 2023-09-10T09:18:22.176+0900 [INFO]  core: Initializing version history cach...r core
+        9月 10 09:18:22 control-plane.minikube.internal systemd[1]: Started "HashiCorp Vault - A tool for managing secrets".
+        Hint: Some lines were ellipsized, use -l to show in full.
+        ```
+
+    ```sh
+    $ netstat -tuln | grep 8200
+    tcp        0      0 10.1.1.200:8200         0.0.0.0:*               LISTEN 
+    ```
+
+## vault を初期化はしない
+
+## vault unsealはしない
+
+
+- unsealしないとエラーになる
+
+    ```sh
+    $ vault auth enable approle
+    Error enabling approle auth: Error making API request.
+
+    URL: POST http://10.1.1.200:8200/v1/sys/auth/approle
+    Code: 503. Errors:
+
+    * Vault is sealed
+    ```
+
+- ちなみに、前の手順より、Unseal Key と Root Token　は以下
+
+    ```sh
+    Unseal Key 1: tYN2ZXR6UOJKiMZzhQvu1nZ+5bymI/B8nSM0zQBlP+cH
+    Unseal Key 2: zRm7x5T4yjtLWTwwwWaY5K/YL/dplOd+KQ6VyykVeCFH
+    Unseal Key 3: 7xXvhns+T4hp8YT4Pd38EqmURNIU20o92itb8PTNmlt4
+    Unseal Key 4: Y7iHvD3EVISub6uSjqt4aVxtnC+0B8OF7m6TXmYL5f9+
+    Unseal Key 5: K9/xHj95ermVqZTnQlk8ZHJ4xtu4e6d0x+ylMKB90G4r
+
+    Initial Root Token: hvs.AkzMQJ2dOofPjOjsLK7pzmWz
+    ```
+
+
+- 以下のコマンドを実行（5つのUnseal Keyの内、3つのUnseal Keyを3回に分け入力）
+
+    ```sh
+    $ vault operator unseal
+    ```
+
+## approle認証バックエンドの設定
+
+- 以下のコマンドを実行
+
+    ```sh
+    $ vault auth enable approle
+    ```
+
+    - 結果
+
+        ```sh
+        Success! Enabled approle auth method at: approle/
+        ```
+
+    ```sh
+    $ vault write auth/approle/role/concourse policies=concourse period=1h 
+    ```
+
+    - 結果
+
+        ```sh
+        Success! Data written to: auth/approle/role/concourse
+        ```
+
+    ```sh
+    $ vault read auth/approle/role/concourse/role-id
+    ```
+
+    - 結果
+
+        ```sh
+        Key        Value
+        ---        -----
+        role_id    2bf6997c-c123-5e25-3e22-ebe3c539ff16 
+        ```
+
+    ```sh
+    $ vault write -f auth/approle/role/concourse/secret-id
+    ```
+
+    - 結果
+
+        ```sh
+        Key                   Value
+        ---                   -----
+        secret_id             f9189289-baf8-368f-088a-c8c14bd484ea
+        secret_id_accessor    49bb32d4-3bab-9eb2-4cba-5b9f4dae0db3
+        secret_id_num_uses    0
+        secret_id_ttl         0s
+        ```
+
+## 
+
+- 先程のトークンをconcourseCIに設定します！docker-composeファイルに以下を追記するだけです。
+- To configure this, first configure the URL of your Vault server by setting the following env on the web node
+
+    ```sh
+    $ cd ~/concourse-install
+    ```
+
+ - `docker-compose.yml`の修正内容
+
+    ```diff
+    $ diff -u docker-compose.yml_old docker-compose.yml
+    --- docker-compose.yml_old      2023-09-10 09:54:42.557330403 +0900
+    +++ docker-compose.yml  2023-09-10 09:59:09.584857957 +0900
+    @@ -29,7 +29,8 @@
+        CONCOURSE_ADD_LOCAL_USER: test:test
+        CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+        CONCOURSE_VAULT_URL: http://10.1.1.200:8200
+    -      CONCOURSE_VAULT_CLIENT_TOKEN: hvs.CAESIC9wzsgw0a0W6cq1LG1UcqofJAcSxgzFEMrBnDTyECs8Gh4KHGh2cy5UQUZ2NHVINm1wb2pLNWRVSWNrQzNXUG8
+    +      CONCOURSE_VAULT_AUTH_BACKEND: "approle"
+    +      CONCOURSE_VAULT_AUTH_PARAM: "role_id:2bf6997c-c123-5e25-3e22-ebe3c539ff16,secret_id:f9189289-baf8-368f-088a-c8c14bd484ea"
+    
+        logging:
+        driver: "json-file"
+    ```
+
+    ```sh
+    $ cat docker-compose.yml
+    ```
+
+    - 結果
+
+        ```sh
+        version: '3'
+
+        services:
+        db:
+            image: postgres
+            environment:
+            POSTGRES_DB: concourse
+            POSTGRES_USER: concourse_user
+            POSTGRES_PASSWORD: concourse_pass
+            logging:
+            driver: "json-file"
+            options:
+                max-file: "5"
+                max-size: "10m"
+
+        web:
+            image: concourse/concourse
+            command: web
+            links: [db]
+            depends_on: [db]
+            ports: ["8080:8080"]
+            volumes: ["./keys/web:/concourse-keys"]
+            environment:
+            CONCOURSE_EXTERNAL_URL: http://localhost:8080
+            CONCOURSE_POSTGRES_HOST: db
+            CONCOURSE_POSTGRES_USER: concourse_user
+            CONCOURSE_POSTGRES_PASSWORD: concourse_pass
+            CONCOURSE_POSTGRES_DATABASE: concourse
+            CONCOURSE_ADD_LOCAL_USER: test:test
+            CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+            CONCOURSE_VAULT_URL: http://10.1.1.200:8200
+            CONCOURSE_VAULT_AUTH_BACKEND: "approle"
+            CONCOURSE_VAULT_AUTH_PARAM: "role_id:2bf6997c-c123-5e25-3e22-ebe3c539ff16,secret_id:f9189289-baf8-368f-088a-c8c14bd484ea"
+
+            logging:
+            driver: "json-file"
+            options:
+                max-file: "5"
+                max-size: "10m"
+
+        worker:
+            image: concourse/concourse
+            command: worker
+            privileged: true
+            depends_on: [web]
+            volumes: ["./keys/worker:/concourse-keys"]
+            links: [web]
+            stop_signal: SIGUSR2
+            environment:
+            CONCOURSE_TSA_HOST: web:2222
+            # enable DNS proxy to support Docker's 127.x.x.x DNS server
+            CONCOURSE_GARDEN_DNS_PROXY_ENABLE: "true"
+            logging:
+            driver: "json-file"
+            options:
+                max-file: "5"
+                max-size: "10m"
+        ```
+
+- concourse を再起動
+
+    ```sh
+    $ docker-compose down
+    ```
+
+    ```sh
+    $ docker-compose up -d
+    ```
+
+- コマンドを実行する（Concourse CI のWebUIへのログイン）
+
+    ```sh
+    $ fly --target tutorial login --concourse-url http://localhost:8080
+    ```
+
+    - 操作
+    - `http://localhost:8080/login?fly_port=43269` でホストOSのブラウザにアクセスし、表示されたtokenを貼り付ける
+    - ユーザID: `test`、パスワード: `test` とする
+    - 上記操作をすると、Concourse CI のWeb UIにログインできる
+
+        ```
+        logging in to team 'main'
+
+        navigate to the following URL in your browser:
+
+        http://localhost:8080/login?fly_port=35283
+
+        or enter token manually (input hidden): 
+        target saved
+        ```
+
+- パイプラインを削除する
+
+    ```sh
+    $ fly -t tutorial destroy-pipeline -p push-docker-image -n
+    ```
+
+- パイプラインを作成
+
+    ```sh
+    $ cd ~/concourse-tutorial/tutorials/miscellaneous/docker-images/
+    ```
+
+
+    ```sh
+    $ fly -t tutorial set-pipeline -p push-docker-image -c pipeline.yml -n
+    ```
+
+    - 結果
+
+        ```sh
+        resources:
+        resource tutorial has been added:
+        + name: tutorial
+        + source:
+        +   branch: develop
+        +   uri: https://github.com/drnic/concourse-tutorial.git
+        + type: git
+        
+        resource hello-world-docker-image has been added:
+        + name: hello-world-docker-image
+        + source:
+        +   email: ((docker-hub-email))
+        +   password: ((docker-hub-password))
+        +   repository: ((docker-hub-username))/concourse-tutorial-hello-world
+        +   username: ((docker-hub-username))
+        + type: docker-image
+        
+        jobs:
+        job publish has been added:
+        + name: publish
+        + plan:
+        + - get: tutorial
+        + - params:
+        +     build: tutorial/tutorials/miscellaneous/docker-images/docker
+        +   put: hello-world-docker-image
+        + - config:
+        +     image_resource:
+        +       name: ""
+        +       source:
+        +         repository: ((docker-hub-username))/concourse-tutorial-hello-world
+        +       type: docker-image
+        +     params:
+        +       NAME: ((docker-hub-username))
+        +     platform: linux
+        +     run:
+        +       path: /bin/hello-world
+        +   task: run
+        + public: true
+        
+        pipeline name: push-docker-image
+
+        pipeline created!
+        you can view your pipeline here: http://localhost:8080/teams/main/pipelines/push-docker-image
+
+        the pipeline is currently paused. to unpause, either:
+        - run the unpause-pipeline command:
+            fly -t tutorial unpause-pipeline -p push-docker-image
+        - click play next to the pipeline in the web ui
+        ```
+
+- パイプラインのリソースをチェック
+
+    ```
+    $ fly -t tutorial check-resource -r push-docker-image/tutorial
+    ```
+
+    - 結果
+
+        ```sh
+        checking push-docker-image/tutorial in build 2
+        initializing check: tutorial
+        selected worker: 367e9bba35ad
+        Cloning into '/tmp/git-resource-repo-cache'...
+        succeeded
+        ```
+
+    ```sh
+    $ fly -t tutorial check-resource -r push-docker-image/hello-world-docker-image
+    ```
+
+    - 結果（成功）
+
+        ```sh
+        checking push-docker-image/hello-world-docker-image in build 1
+        initializing check: hello-world-docker-image
+        selected worker: 367e9bba35ad
+        succeeded            
+        ```
+
+- パイプラインを実行
+
+    ```sh
+    $ fly -t tutorial unpause-pipeline -p push-docker-image
+    ```
+
+    - 結果
+
+        ```sh
+        unpaused 'push-docker-image'
+        ```
+
+    ```sh
+    $ fly -t tutorial trigger-job -j push-docker-image/publish -w
+    ```
+
+    - 結果（成功）
+
+        ```sh
+        started push-docker-image/publish #1
+
+        selected worker: 367e9bba35ad
+        Cloning into '/tmp/build/get'...
+        a3edcb3 restrict mkdocs packages until can make time to upgrade https://ci2.starkandwayne.com/teams/starkandwayne/pipelines/concourse-tutorial/jobs/website-master/builds/32
+        selected worker: 367e9bba35ad
+        waiting for docker to come up...
+        WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+        Configure a credential helper to remove this warning. See
+        https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+        Login Succeeded
+        DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+                    BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+                    environment-variable.
+
+        Sending build context to Docker daemon  3.072kB
+        Step 1/4 : FROM busybox
+        latest: Pulling from library/busybox
+        3f4d90098f5b: Pulling fs layer
+        3f4d90098f5b: Verifying Checksum
+        3f4d90098f5b: Download complete
+        3f4d90098f5b: Pull complete
+        Digest: sha256:3fbc632167424a6d997e74f52b878d7cc478225cffac6bc977eedfe51c7f4e79
+        Status: Downloaded newer image for busybox:latest
+        ---> a416a98b71e2
+        Step 2/4 : ADD hello-world /bin/hello-world
+        ---> cb936a7205a9
+        Step 3/4 : ENV NAME=world
+        ---> Running in 53845428d0f9
+        Removing intermediate container 53845428d0f9
+        ---> 9c4bec084be3
+        Step 4/4 : ENTRYPOINT ["/bin/hello-world"]
+        ---> Running in c63526c40516
+        Removing intermediate container c63526c40516
+        ---> 976cc14f6779
+        Successfully built 976cc14f6779
+        Successfully tagged kuzumusen/concourse-tutorial-hello-world:latest
+        The push refers to repository [docker.io/kuzumusen/concourse-tutorial-hello-world]
+        110ac2d6958b: Preparing
+        3d24ee258efc: Preparing
+        3d24ee258efc: Mounted from library/busybox
+        110ac2d6958b: Pushed
+        latest: digest: sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd size: 735
+        selected worker: 367e9bba35ad
+        waiting for docker to come up...
+        WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+        Configure a credential helper to remove this warning. See
+        https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+        Login Succeeded
+        Pulling kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd...
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd: Pulling from kuzumusen/concourse-tutorial-hello-world
+        3f4d90098f5b: Pulling fs layer
+        7afe31b2fdba: Pulling fs layer
+        7afe31b2fdba: Download complete
+        3f4d90098f5b: Verifying Checksum
+        3f4d90098f5b: Download complete
+        3f4d90098f5b: Pull complete
+        7afe31b2fdba: Pull complete
+        Digest: sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd
+        Status: Downloaded newer image for kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd
+
+        Successfully pulled kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd.
+
+        initializing
+        initializing check: image
+        selected worker: 367e9bba35ad
+        selected worker: 367e9bba35ad
+        waiting for docker to come up...
+        Pulling kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd...
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd: Pulling from kuzumusen/concourse-tutorial-hello-world
+        3f4d90098f5b: Pulling fs layer
+        7afe31b2fdba: Pulling fs layer
+        7afe31b2fdba: Verifying Checksum
+        7afe31b2fdba: Download complete
+        3f4d90098f5b: Verifying Checksum
+        3f4d90098f5b: Download complete
+        3f4d90098f5b: Pull complete
+        7afe31b2fdba: Pull complete
+        Digest: sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd
+        Status: Downloaded newer image for kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd
+        docker.io/kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd
+
+        Successfully pulled kuzumusen/concourse-tutorial-hello-world@sha256:ad795ce27d8effd0e42afad470a57282f2fb918a6e943ebe6253127c034be9cd.
+
+        selected worker: 367e9bba35ad
+        running /bin/hello-world
+        hello kuzumusen
+        succeeded
+        ```
+
+
+# `~/concourse-tutorial/tutorials`をコピー
+
+- 以下のコマンドを実行
+
+    ```sh
+    $ cp -r ~/concourse-tutorial/tutorials/ ~/concourse-install/
+    ```
+

@@ -3495,7 +3495,7 @@ Vaultのチュートリアル
 
 ## vault を初期化はしない
 
-## vault unsealはしない
+## vault unsealする
 
 
 - unsealしないとエラーになる
